@@ -1,0 +1,141 @@
+The architecture of the system will be based on a Model-View-Controller (MVC) design pattern. The system will be developed using Python and the Flask web framework. The Google Sheets API will be used for integration with Google Sheets. The system will also use SQLAlchemy for database operations and Jinja2 for templating.
+
+Here are the core classes, functions, and methods that will be necessary:
+
+1. User class (models.py): This class will represent the user in the system. It will have methods for password hashing and verification.
+
+2. Deal class (models.py): This class will represent a deal in the system. It will have methods for calculating commission.
+
+3. UserController class (controllers.py): This class will handle user-related operations like registration, login, and profile management.
+
+4. DealController class (controllers.py): This class will handle deal-related operations like submission, approval, and tracking.
+
+5. GoogleSheetsService class (services.py): This class will handle the integration with Google Sheets.
+
+6. main function (app.py): This function will be the entry point of the application. It will initialize the Flask app and the database, and register the routes.
+
+Now, let's write the code for each file.
+
+app.py
+```python
+from flask import Flask
+from flask_sqlalchemy import SQLAlchemy
+from controllers import UserController, DealController
+
+app = Flask(__name__)
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:////tmp/test.db'
+db = SQLAlchemy(app)
+
+user_controller = UserController(db)
+deal_controller = DealController(db)
+
+@app.route('/register', methods=['POST'])
+def register():
+    return user_controller.register()
+
+@app.route('/login', methods=['POST'])
+def login():
+    return user_controller.login()
+
+@app.route('/submit_deal', methods=['POST'])
+def submit_deal():
+    return deal_controller.submit()
+
+@app.route('/approve_deal', methods=['POST'])
+def approve_deal():
+    return deal_controller.approve()
+
+@app.route('/track_deal', methods=['GET'])
+def track_deal():
+    return deal_controller.track()
+
+if __name__ == '__main__':
+    db.create_all()
+    app.run(debug=True)
+```
+
+models.py
+```python
+from flask_sqlalchemy import SQLAlchemy
+from werkzeug.security import generate_password_hash, check_password_hash
+
+db = SQLAlchemy()
+
+class User(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(80), unique=True, nullable=False)
+    password_hash = db.Column(db.String(120), nullable=False)
+
+    def set_password(self, password):
+        self.password_hash = generate_password_hash(password)
+
+    def check_password(self, password):
+        return check_password_hash(self.password_hash, password)
+
+class Deal(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(80), nullable=False)
+    status = db.Column(db.String(20), nullable=False)
+    commission = db.Column(db.Float, nullable=False)
+
+    def calculate_commission(self, deal_value, commission_rate):
+        self.commission = deal_value * commission_rate
+```
+
+controllers.py
+```python
+from flask import request, jsonify
+from models import User, Deal
+from services import GoogleSheetsService
+
+class UserController:
+    def __init__(self, db):
+        self.db = db
+
+    def register(self):
+        # Registration logic here
+        pass
+
+    def login(self):
+        # Login logic here
+        pass
+
+class DealController:
+    def __init__(self, db):
+        self.db = db
+        self.google_sheets_service = GoogleSheetsService()
+
+    def submit(self):
+        # Deal submission logic here
+        pass
+
+    def approve(self):
+        # Deal approval logic here
+        pass
+
+    def track(self):
+        # Deal tracking logic here
+        pass
+```
+
+services.py
+```python
+class GoogleSheetsService:
+    def sync(self):
+        # Google Sheets synchronization logic here
+        pass
+```
+
+requirements.txt
+```plaintext
+Flask==1.1.2
+Flask-SQLAlchemy==2.4.4
+google-auth==1.24.0
+google-auth-oauthlib==0.4.2
+google-auth-httplib2==0.0.4
+gspread==3.6.0
+oauth2client==4.1.3
+Werkzeug==1.0.1
+```
+
+This is a basic structure of the system. The actual implementation of the methods in the controllers and the GoogleSheetsService class will depend on the specific requirements and the external services used.
